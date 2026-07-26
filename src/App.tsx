@@ -68,6 +68,18 @@ function buildRequest(
   };
 }
 
+function requestHistorySignature(request: ChordRequest): string {
+  return JSON.stringify({
+    rootMidi: request.rootMidi,
+    manualType: request.manualType,
+    extensions: request.extensions,
+    voicing: request.voicing,
+    keyModeEnabled: request.keyModeEnabled,
+    keyRoot: request.key.root,
+    keyMode: request.key.mode,
+  });
+}
+
 function App() {
   const [activeType, setActiveType] = useState<ChordType | null>(null);
   const [activeExtensions, setActiveExtensions] = useState<Set<ChordExtension>>(() => new Set());
@@ -91,6 +103,8 @@ function App() {
   const [selectedMidiOutputId, setSelectedMidiOutputId] = useState<string | null>(null);
   const historyCounter = useRef(0);
   const lastRecordedMidi = useRef<number | null>(null);
+  const historySessionEntryId = useRef<string | null>(null);
+  const lastRecordedRequestSignature = useRef<string | null>(null);
 
   const sortedHistory = useMemo(() => sortHistoryEntries(history), [history]);
   const favoriteEntries = useMemo(() => getFavoriteEntries(history), [history]);
@@ -172,19 +186,27 @@ function App() {
   );
 
   const recordHistory = useCallback(
-    (request: ChordRequest, resolved: ReturnType<typeof resolveChord>) => {
+    (
+      request: ChordRequest,
+      resolved: ReturnType<typeof resolveChord>,
+      options?: { replaceSessionEntry?: boolean },
+    ) => {
       historyCounter.current += 1;
-      setHistory((previous) =>
-        appendHistory(
-          previous,
-          createHistoryEntry(
-            request,
-            resolved,
-            currentPlaybackSettings,
-            `history-${historyCounter.current}`,
-          ),
-        ),
-      );
+      const id = `history-${historyCounter.current}`;
+      const replaceId = options?.replaceSessionEntry ? historySessionEntryId.current : null;
+
+      setHistory((previous) => {
+        const withoutSession = replaceId
+          ? previous.filter((entry) => entry.id !== replaceId)
+          : previous;
+
+        return appendHistory(
+          withoutSession,
+          createHistoryEntry(request, resolved, currentPlaybackSettings, id),
+        );
+      });
+
+      historySessionEntryId.current = id;
     },
     [currentPlaybackSettings],
   );
@@ -200,6 +222,8 @@ function App() {
   const handleKeyRelease = useCallback(() => {
     setActiveMidi(null);
     lastRecordedMidi.current = null;
+    historySessionEntryId.current = null;
+    lastRecordedRequestSignature.current = null;
     stopChord();
   }, []);
 
@@ -364,10 +388,16 @@ function App() {
     }
 
     const resolved = playResolved(liveRequest);
-    if (lastRecordedMidi.current !== activeMidi) {
-      recordHistory(liveRequest, resolved);
-      lastRecordedMidi.current = activeMidi;
+    const signature = requestHistorySignature(liveRequest);
+    if (lastRecordedRequestSignature.current === signature) {
+      return;
     }
+
+    const replacingSameHold =
+      lastRecordedMidi.current === activeMidi && historySessionEntryId.current !== null;
+    recordHistory(liveRequest, resolved, { replaceSessionEntry: replacingSameHold });
+    lastRecordedMidi.current = activeMidi;
+    lastRecordedRequestSignature.current = signature;
   }, [activeMidi, liveRequest, playResolved, recordHistory, replayDisplay]);
 
   useEffect(() => {
