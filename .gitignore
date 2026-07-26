@@ -8,9 +8,11 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.pnpm-store
 dist
 dist-ssr
 *.local
+.test-run-output.txt
 
 # Editor directories and files
 .vscode/*
@@ -23,7 +25,26 @@ dist-ssr
 *.sln
 *.sw?
 
-# dotenv environment variable files
+# dotenv / secrets — never commit real env or credentials
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+credentials.json
+**/credentials.json
+**/service-account*.json
+*.secrets.*
+secrets/
+.secrets/
+
+# Package-manager auth (tokens belong in the user-level config, not the repo)
+.npmrc
+!/.npmrc.example
