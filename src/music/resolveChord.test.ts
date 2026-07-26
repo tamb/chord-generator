@@ -164,6 +164,13 @@ describe("history helpers", () => {
     expect(appendHistory([first], duplicate)).toEqual([duplicate]);
   });
 
+  it("preserves favorite when replacing a duplicate signature", () => {
+    const favorited = makeEntry({ id: "history-1", favorite: true, playedAt: 10 });
+    const replay = makeEntry({ id: "history-2", favorite: false, playedAt: 20 });
+
+    expect(appendHistory([favorited], replay)).toEqual([{ ...replay, favorite: true }]);
+  });
+
   it("sorts history newest first", () => {
     const older = makeEntry({ id: "history-1", playedAt: 10 });
     const newer = makeEntry({ id: "history-2", playedAt: 30, rootMidi: 62, name: "D" });

@@ -13,16 +13,95 @@
   --text-muted: #6f5840;
   --display-bg: #1a120c;
   --display-text: #ffe7bf;
+  --surface: rgba(255, 249, 239, 0.55);
+  --surface-strong: rgba(255, 249, 239, 0.72);
+  --surface-soft: rgba(255, 249, 239, 0.35);
+  --control-bg: rgba(255, 255, 255, 0.65);
+  --control-bg-soft: rgba(255, 255, 255, 0.55);
+  --control-bg-strong: rgba(255, 255, 255, 0.75);
+  --control-border: rgba(45, 34, 24, 0.12);
+  --card-border: rgba(216, 199, 166, 0.9);
+  --accent-soft: rgba(216, 107, 63, 0.16);
+  --accent-border: rgba(216, 107, 63, 0.45);
+  --accent-fill: rgba(216, 107, 63, 0.1);
+  --danger-text: #8f2d14;
+  --danger-border: rgba(143, 45, 20, 0.25);
+  --danger-fill: rgba(143, 45, 20, 0.08);
+  --favorite: #c9782a;
+  --favorite-border: rgba(201, 120, 42, 0.45);
+  --favorite-fill: rgba(201, 120, 42, 0.12);
+  --page-glow: rgba(255, 230, 176, 0.55);
+  --page-top: #ead7b6;
+  --page-bottom: #c9ad82;
+  --dial-face-top: #efe2c9;
+  --dial-face-bottom: #cdb891;
+  --dial-center-top: #f7eedb;
+  --dial-center-bottom: #ccb98f;
+  --dial-pointer-top: #2b2016;
+  --dial-pointer-bottom: #4a3628;
+  --dial-ring: rgba(45, 34, 24, 0.16);
+  --piano-bed-top: #d9c29a;
+  --piano-bed-bottom: #b9976f;
+  --backdrop: rgba(36, 24, 8, 0.35);
 
   font-family: Futura, "Futura PT", "Century Gothic", "Trebuchet MS", sans-serif;
   color: var(--text-main);
   background:
-    radial-gradient(circle at top, rgba(255, 230, 176, 0.55), transparent 55%),
-    linear-gradient(180deg, #ead7b6 0%, #c9ad82 100%);
+    radial-gradient(circle at top, var(--page-glow), transparent 55%),
+    linear-gradient(180deg, var(--page-top) 0%, var(--page-bottom) 100%);
+  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-theme="dark"] {
+  --panel-bg: #1a1511;
+  --panel-edge: #3a3026;
+  --panel-shadow: rgba(0, 0, 0, 0.5);
+  --key-black: #0c0907;
+  --key-black-active: #d86b3f;
+  --key-white: #d9cbb3;
+  --key-white-active: #ffe9b8;
+  --button-bg: #2f261c;
+  --button-active: #e07a4a;
+  --button-text: #fff6ea;
+  --text-main: #f3ead8;
+  --text-muted: #b5a48c;
+  --display-bg: #0d0a08;
+  --display-text: #ffe7bf;
+  --surface: rgba(42, 34, 26, 0.88);
+  --surface-strong: rgba(32, 26, 20, 0.94);
+  --surface-soft: rgba(24, 19, 15, 0.72);
+  --control-bg: rgba(48, 39, 30, 0.92);
+  --control-bg-soft: rgba(44, 35, 27, 0.88);
+  --control-bg-strong: rgba(54, 44, 34, 0.95);
+  --control-border: rgba(243, 234, 216, 0.12);
+  --card-border: rgba(90, 74, 54, 0.9);
+  --accent-soft: rgba(224, 122, 74, 0.22);
+  --accent-border: rgba(224, 122, 74, 0.5);
+  --accent-fill: rgba(224, 122, 74, 0.14);
+  --danger-text: #f0a090;
+  --danger-border: rgba(240, 160, 144, 0.3);
+  --danger-fill: rgba(240, 160, 144, 0.1);
+  --favorite: #e0a04a;
+  --favorite-border: rgba(224, 160, 74, 0.45);
+  --favorite-fill: rgba(224, 160, 74, 0.14);
+  --page-glow: rgba(224, 122, 74, 0.14);
+  --page-top: #120e0b;
+  --page-bottom: #1a1511;
+  --dial-face-top: #3a3026;
+  --dial-face-bottom: #2a221a;
+  --dial-center-top: #4a3c2e;
+  --dial-center-bottom: #32281f;
+  --dial-pointer-top: #f3ead8;
+  --dial-pointer-bottom: #c9ad82;
+  --dial-ring: rgba(243, 234, 216, 0.16);
+  --piano-bed-top: #3a3026;
+  --piano-bed-bottom: #2a221a;
+  --backdrop: rgba(0, 0, 0, 0.55);
+  color-scheme: dark;
 }
 
 * {
@@ -32,7 +111,8 @@
 body {
   margin: 0;
   min-height: 100svh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #root {
@@ -59,10 +139,12 @@ button {
 .instrument-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   flex-shrink: 0;
   padding: 8px 16px;
   border-bottom: 1px solid var(--panel-edge);
-  background: rgba(255, 249, 239, 0.72);
+  background: var(--surface-strong);
 }
 
 .instrument-title {
@@ -73,11 +155,173 @@ button {
   line-height: 1.2;
 }
 
+.header-menu-button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid var(--control-border);
+  border-radius: 12px;
+  background: var(--control-bg);
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.header-menu-button:hover {
+  border-color: var(--accent-border);
+}
+
+.header-menu-icon {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 18px;
+  height: 12px;
+}
+
+.header-menu-icon span {
+  display: block;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--text-main);
+}
+
+.offcanvas-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--backdrop);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.offcanvas-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.offcanvas-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  width: min(320px, 88vw);
+  height: 100%;
+  padding: 16px;
+  background: var(--panel-bg);
+  border-left: 1px solid var(--panel-edge);
+  box-shadow: -12px 0 32px var(--panel-shadow);
+  transform: translateX(100%);
+  transition: transform 220ms ease;
+}
+
+.offcanvas-panel.open {
+  transform: translateX(0);
+}
+
+.offcanvas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.offcanvas-title {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.offcanvas-close {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--control-border);
+  border-radius: 12px;
+  background: var(--control-bg);
+  color: var(--text-muted);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.offcanvas-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.offcanvas-section .sound-controls-heading {
+  margin: 0;
+}
+
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--control-border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.settings-toggle-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.settings-toggle-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.settings-toggle-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.offcanvas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.offcanvas-item {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--control-border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+}
+
+.offcanvas-item:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-fill);
+}
+
 .instrument-layout {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(240px, 1fr);
-  flex: 1;
-  min-height: 0;
+  flex: 1 0 auto;
+  align-items: start;
 }
 
 .instrument-left {
@@ -86,9 +330,11 @@ button {
   gap: 12px;
   padding: 16px 20px 20px;
   border-right: 1px solid var(--panel-edge);
-  background: rgba(255, 249, 239, 0.35);
-  min-height: 0;
-  overflow: hidden;
+  background: var(--surface-soft);
+  position: sticky;
+  top: 0;
+  max-height: 100svh;
+  overflow-y: auto;
 }
 
 .instrument-right {
@@ -96,8 +342,6 @@ button {
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  min-height: 0;
-  overflow-y: auto;
 }
 
 .volume-control {
@@ -109,8 +353,8 @@ button {
   width: 100%;
   padding: 10px 14px;
   border-radius: 14px;
-  background: rgba(255, 249, 239, 0.55);
-  border: 1px solid rgba(216, 199, 166, 0.9);
+  background: var(--surface);
+  border: 1px solid var(--card-border);
   font-size: 0.82rem;
   color: var(--text-muted);
 }
@@ -132,8 +376,8 @@ button {
   flex-shrink: 0;
   padding: 14px;
   border-radius: 16px;
-  background: rgba(255, 249, 239, 0.55);
-  border: 1px solid rgba(216, 199, 166, 0.9);
+  background: var(--surface);
+  border: 1px solid var(--card-border);
 }
 
 .sound-controls-heading {
@@ -156,9 +400,9 @@ button {
   align-items: flex-start;
   gap: 2px;
   padding: 8px 10px;
-  border: 1px solid rgba(45, 34, 24, 0.12);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.55);
+  background: var(--control-bg-soft);
   color: var(--text-main);
   cursor: pointer;
   text-align: left;
@@ -170,11 +414,11 @@ button {
 
 .voice-option:hover {
   transform: translateY(-1px);
-  border-color: rgba(216, 107, 63, 0.45);
+  border-color: var(--accent-border);
 }
 
 .voice-option.active {
-  background: rgba(216, 107, 63, 0.16);
+  background: var(--accent-soft);
   border-color: var(--button-active);
   box-shadow: inset 0 0 0 1px rgba(216, 107, 63, 0.25);
 }
@@ -218,11 +462,11 @@ button {
   border-radius: 50%;
   background:
     radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.85), transparent 38%),
-    linear-gradient(180deg, #efe2c9 0%, #cdb891 100%);
+    linear-gradient(180deg, var(--dial-face-top) 0%, var(--dial-face-bottom) 100%);
   box-shadow:
-    inset 0 2px 4px rgba(255, 255, 255, 0.65),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2),
     inset 0 -3px 6px rgba(0, 0, 0, 0.12),
-    0 8px 16px rgba(36, 24, 8, 0.12);
+    0 8px 16px var(--panel-shadow);
 }
 
 .effect-dial-ring {
@@ -231,8 +475,8 @@ button {
   border-radius: 50%;
   background: conic-gradient(
     from 225deg,
-    rgba(45, 34, 24, 0.16) 0deg,
-    rgba(45, 34, 24, 0.16) 270deg,
+    var(--dial-ring) 0deg,
+    var(--dial-ring) 270deg,
     transparent 270deg
   );
   mask: radial-gradient(circle, transparent 54%, #000 55%);
@@ -260,7 +504,7 @@ button {
   transform-origin: 50% 100%;
   transform: rotate(var(--dial-angle));
   border-radius: 2px;
-  background: linear-gradient(180deg, #2b2016 0%, #4a3628 100%);
+  background: linear-gradient(180deg, var(--dial-pointer-top) 0%, var(--dial-pointer-bottom) 100%);
   box-shadow: 0 1px 1px rgba(255, 255, 255, 0.25);
   z-index: 2;
   pointer-events: none;
@@ -272,9 +516,9 @@ button {
   width: 30%;
   height: 30%;
   border-radius: 50%;
-  background: linear-gradient(180deg, #f7eedb 0%, #ccb98f 100%);
+  background: linear-gradient(180deg, var(--dial-center-top) 0%, var(--dial-center-bottom) 100%);
   box-shadow:
-    inset 0 1px 2px rgba(255, 255, 255, 0.75),
+    inset 0 1px 2px var(--control-bg-strong),
     0 2px 5px rgba(36, 24, 8, 0.18);
   z-index: 3;
   pointer-events: none;
@@ -309,42 +553,82 @@ button {
 .key-mode-control,
 .voicing-dial,
 .midi-controls,
-.chord-history {
+.chord-history-section {
   padding: 12px;
   border-radius: 14px;
-  background: rgba(255, 249, 239, 0.55);
-  border: 1px solid rgba(216, 199, 166, 0.9);
+  background: var(--surface);
+  border: 1px solid var(--card-border);
 }
 
-.key-mode-header,
-.midi-controls-header {
+.collapsible-section-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 12px;
 }
 
-.key-mode-status,
-.midi-controls-status,
+.collapsible-section-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.collapsible-section-chevron {
+  flex-shrink: 0;
+  width: 0.9rem;
+  margin-top: 0.1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.collapsible-section-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.collapsible-section-titles .sound-controls-heading {
+  margin: 0;
+}
+
+.collapsible-section-subtitle,
 .chord-history-empty {
-  margin: 4px 0 0;
+  margin: 0;
   font-size: 0.82rem;
   color: var(--text-muted);
+}
+
+.collapsible-section-actions {
+  display: flex;
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+
+.collapsible-section-body {
+  margin-top: 12px;
 }
 
 .key-mode-toggle {
   min-width: 72px;
   padding: 8px 12px;
-  border: 1px solid rgba(45, 34, 24, 0.15);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--control-bg);
   color: var(--text-main);
   cursor: pointer;
 }
 
 .key-mode-toggle.active {
-  background: rgba(216, 107, 63, 0.18);
+  background: var(--accent-soft);
   border-color: var(--button-active);
 }
 
@@ -364,8 +648,8 @@ button {
 .key-mode-select select {
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(45, 34, 24, 0.12);
-  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--control-border);
+  background: var(--control-bg-strong);
   color: var(--text-main);
   font: inherit;
 }
@@ -406,23 +690,16 @@ button {
 }
 
 .chord-history {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 0;
-}
-
-.chord-history-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .chord-history-toolbar {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-bottom: 8px;
 }
 
 .chord-history-actions {
@@ -433,18 +710,18 @@ button {
 
 .chord-history-action {
   padding: 6px 10px;
-  border: 1px solid rgba(45, 34, 24, 0.12);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--control-bg);
   color: var(--text-main);
   font-size: 0.72rem;
   cursor: pointer;
 }
 
 .chord-history-action.danger {
-  color: #8f2d14;
-  border-color: rgba(143, 45, 20, 0.25);
-  background: rgba(143, 45, 20, 0.08);
+  color: var(--danger-text);
+  border-color: var(--danger-border);
+  background: var(--danger-fill);
 }
 
 .chord-history-list {
@@ -467,7 +744,7 @@ button {
 }
 
 .chord-history-item.selected {
-  outline: 1px solid rgba(216, 107, 63, 0.45);
+  outline: 1px solid var(--accent-border);
   border-radius: 14px;
 }
 
@@ -490,25 +767,25 @@ button {
 
 .chord-history-favorite {
   width: 36px;
-  border: 1px solid rgba(45, 34, 24, 0.12);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--control-bg);
   color: var(--text-muted);
   font-size: 1rem;
   cursor: pointer;
 }
 
 .chord-history-favorite.active {
-  color: #c9782a;
-  border-color: rgba(201, 120, 42, 0.45);
-  background: rgba(201, 120, 42, 0.12);
+  color: var(--favorite);
+  border-color: var(--favorite-border);
+  background: var(--favorite-fill);
 }
 
 .chord-history-delete {
   width: 36px;
-  border: 1px solid rgba(45, 34, 24, 0.12);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--control-bg);
   color: var(--text-muted);
   font-size: 1.2rem;
   line-height: 1;
@@ -516,9 +793,9 @@ button {
 }
 
 .chord-history-delete:hover {
-  color: #8f2d14;
-  border-color: rgba(143, 45, 20, 0.25);
-  background: rgba(143, 45, 20, 0.08);
+  color: var(--danger-text);
+  border-color: var(--danger-border);
+  background: var(--danger-fill);
 }
 
 .chord-history-chip {
@@ -530,15 +807,15 @@ button {
   width: 100%;
   min-width: 0;
   padding: 10px 12px;
-  border: 1px solid rgba(45, 34, 24, 0.12);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.65);
+  background: var(--control-bg);
   color: var(--text-main);
   cursor: pointer;
 }
 
 .chord-history-chip:hover {
-  border-color: rgba(216, 107, 63, 0.45);
+  border-color: var(--accent-border);
 }
 
 .chord-history-name {
@@ -609,8 +886,6 @@ button {
   display: grid;
   grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
   gap: 16px;
-  flex: 1;
-  min-height: 0;
   align-items: stretch;
 }
 
@@ -658,13 +933,56 @@ button {
 }
 
 .chord-button-label {
+  position: relative;
+  z-index: 1;
   font-size: 0.92rem;
   font-weight: 700;
 }
 
 .chord-button-shortcut {
+  position: relative;
+  z-index: 1;
   font-size: 0.68rem;
   opacity: 0.75;
+}
+
+.ripple-host {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.md-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: scale(0);
+  opacity: 0.35;
+  background: rgba(255, 255, 255, 0.45);
+  animation: md-ripple 560ms ease-out forwards;
+  z-index: 0;
+}
+
+.piano-key.white .md-ripple {
+  background: rgba(45, 34, 24, 0.28);
+}
+
+.piano-key.black .md-ripple {
+  background: rgba(255, 246, 234, 0.4);
+}
+
+@keyframes md-ripple {
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .md-ripple {
+    animation: none;
+    display: none;
+  }
 }
 
 .piano-keyboard {
@@ -677,7 +995,7 @@ button {
   height: auto;
   padding: 12px;
   border-radius: 18px;
-  background: linear-gradient(180deg, #d9c29a 0%, #b9976f 100%);
+  background: linear-gradient(180deg, var(--piano-bed-top) 0%, var(--piano-bed-bottom) 100%);
   container-type: inline-size;
 }
 
@@ -739,6 +1057,7 @@ button {
   left: 50%;
   transform: translateX(-50%);
   line-height: 1;
+  z-index: 1;
 }
 
 .piano-key-label {
@@ -769,15 +1088,13 @@ button {
 }
 
 @media (max-width: 960px) {
-  body {
-    overflow: auto;
-  }
-
   .instrument-layout {
     grid-template-columns: 1fr;
   }
 
   .instrument-left {
+    position: static;
+    max-height: none;
     border-right: none;
     border-bottom: 1px solid var(--panel-edge);
     overflow: visible;
@@ -785,7 +1102,6 @@ button {
 
   .instrument-panel {
     grid-template-columns: 1fr;
-    min-height: 420px;
   }
 
   .chord-button-row {

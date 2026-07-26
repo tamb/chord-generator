@@ -13,6 +13,7 @@ import { ChordDisplay } from "./components/ChordDisplay";
 import { ChordHistory } from "./components/ChordHistory";
 import { KeyModeControl } from "./components/KeyModeControl";
 import { MidiControls } from "./components/MidiControls";
+import { OffcanvasMenu } from "./components/OffcanvasMenu";
 import { PianoKeyboard } from "./components/PianoKeyboard";
 import { SoundControls } from "./components/SoundControls";
 import { VoicingDial } from "./components/VoicingDial";
@@ -35,6 +36,9 @@ import {
 import { formatNoteList, type ChordExtension, type ChordType } from "./music/chords";
 import { clampVoicing, stepVoicing } from "./music/voicing";
 import { loadChordHistory, saveChordHistory } from "./storage/chordHistoryStore";
+import { shouldApplyLoadedHistory } from "./storage/historyHydration";
+import { applyThemeMode, loadThemeMode, saveThemeMode, type ThemeMode } from "./storage/themeStore";
+import { loadRippleEnabled, saveRippleEnabled } from "./storage/rippleStore";
 import "./App.css";
 
 type ResolvedDisplay = {
@@ -101,7 +105,13 @@ function App() {
   const [midiEnabled, setMidiEnabled] = useState(false);
   const [midiOutputs, setMidiOutputs] = useState<{ id: string; name: string }[]>([]);
   const [selectedMidiOutputId, setSelectedMidiOutputId] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => loadThemeMode());
+  const [rippleEnabled, setRippleEnabled] = useState(() => loadRippleEnabled());
   const historyCounter = useRef(0);
+  const historyHydratedRef = useRef(false);
+  const historySaveChain = useRef(Promise.resolve());
+  const latestHistorySave = useRef({ entries: [] as ChordHistoryEntry[], counter: 0 });
   const lastRecordedMidi = useRef<number | null>(null);
   const historySessionEntryId = useRef<string | null>(null);
   const lastRecordedRequestSignature = useRef<string | null>(null);
@@ -337,15 +347,28 @@ function App() {
   }, []);
 
   useEffect(() => {
+    applyThemeMode(themeMode);
+    saveThemeMode(themeMode);
+  }, [themeMode]);
+
+  useEffect(() => {
+    saveRippleEnabled(rippleEnabled);
+  }, [rippleEnabled]);
+
+  useEffect(() => {
     let cancelled = false;
 
     void loadChordHistory().then(({ entries, counter }) => {
-      if (cancelled) {
+      // Apply stored history only once. A second load (e.g. React Strict Mode
+      // re-running mount effects) must not clobber chords recorded after hydrate.
+      if (!shouldApplyLoadedHistory(historyHydratedRef.current, cancelled)) {
         return;
       }
 
-      setHistory(entries);
+      historyHydratedRef.current = true;
       historyCounter.current = counter;
+      latestHistorySave.current = { entries, counter };
+      setHistory(entries);
       setHistoryHydrated(true);
     });
 
@@ -359,7 +382,15 @@ function App() {
       return;
     }
 
-    void saveChordHistory(history, historyCounter.current);
+    const counter = historyCounter.current;
+    latestHistorySave.current = { entries: history, counter };
+
+    historySaveChain.current = historySaveChain.current
+      .catch(() => undefined)
+      .then(async () => {
+        const snapshot = latestHistorySave.current;
+        await saveChordHistory(snapshot.entries, snapshot.counter);
+      });
   }, [history, historyHydrated]);
 
   useEffect(() => {
@@ -388,6 +419,10 @@ function App() {
     }
 
     const resolved = playResolved(liveRequest);
+    if (!historyHydrated) {
+      return;
+    }
+
     const signature = requestHistorySignature(liveRequest);
     if (lastRecordedRequestSignature.current === signature) {
       return;
@@ -398,7 +433,7 @@ function App() {
     recordHistory(liveRequest, resolved, { replaceSessionEntry: replacingSameHold });
     lastRecordedMidi.current = activeMidi;
     lastRecordedRequestSignature.current = signature;
-  }, [activeMidi, liveRequest, playResolved, recordHistory, replayDisplay]);
+  }, [activeMidi, historyHydrated, liveRequest, playResolved, recordHistory, replayDisplay]);
 
   useEffect(() => {
     if (liveResolved) {
@@ -494,6 +529,14 @@ function App() {
     <main className="instrument">
       <header className="instrument-header">
         <h2 className="instrument-title">chord-generator</h2>
+        <OffcanvasMenu
+          open={menuOpen}
+          onOpenChange={setMenuOpen}
+          darkMode={themeMode === "dark"}
+          onDarkModeChange={(enabled) => setThemeMode(enabled ? "dark" : "light")}
+          rippleEnabled={rippleEnabled}
+          onRippleEnabledChange={setRippleEnabled}
+        />
       </header>
 
       <div className="instrument-layout">
@@ -524,11 +567,13 @@ function App() {
             <ChordButtons
               activeType={activeType}
               activeExtensions={activeExtensions}
+              rippleEnabled={rippleEnabled}
               onTypeChange={handleTypeChange}
               onExtensionChange={handleExtensionChange}
             />
             <PianoKeyboard
               activeMidi={activeMidi}
+              rippleEnabled={rippleEnabled}
               onKeyPress={handleKeyPress}
               onKeyRelease={handleKeyRelease}
             />

@@ -136,9 +136,17 @@ export function appendHistory(
   entry: ChordHistoryEntry,
 ): ChordHistoryEntry[] {
   const signature = entrySignature(entry);
-  const withoutDuplicate = history.filter((existing) => entrySignature(existing) !== signature);
+  let favorite = entry.favorite;
+  const withoutDuplicate = history.filter((existing) => {
+    if (entrySignature(existing) !== signature) {
+      return true;
+    }
 
-  return [entry, ...withoutDuplicate];
+    favorite = favorite || existing.favorite;
+    return false;
+  });
+
+  return [{ ...entry, favorite }, ...withoutDuplicate];
 }
 
 export function toggleEntryFavorite(

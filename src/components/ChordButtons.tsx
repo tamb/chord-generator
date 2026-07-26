@@ -1,4 +1,5 @@
 import type { ChordExtension, ChordType } from "../music/chords";
+import { maybeSpawnRipple } from "../ui/ripple";
 
 const CHORD_TYPES: { id: ChordType; label: string; shortcut: string }[] = [
   { id: "dim", label: "Dim", shortcut: "1" },
@@ -17,6 +18,7 @@ const CHORD_EXTENSIONS: { id: ChordExtension; label: string; shortcut: string }[
 type ChordButtonsProps = {
   activeType: ChordType | null;
   activeExtensions: ReadonlySet<ChordExtension>;
+  rippleEnabled?: boolean;
   onTypeChange: (type: ChordType | null) => void;
   onExtensionChange: (extension: ChordExtension, active: boolean) => void;
 };
@@ -25,23 +27,26 @@ function HoldButton({
   label,
   shortcut,
   active,
+  rippleEnabled,
   onPress,
   onRelease,
 }: {
   label: string;
   shortcut: string;
   active: boolean;
+  rippleEnabled: boolean;
   onPress: () => void;
   onRelease: () => void;
 }) {
   return (
     <button
       type="button"
-      className={`chord-button ${active ? "active" : ""}`}
+      className={`chord-button ripple-host ${active ? "active" : ""}`}
       aria-pressed={active}
       onPointerDown={(event) => {
         event.preventDefault();
         event.currentTarget.setPointerCapture(event.pointerId);
+        maybeSpawnRipple(rippleEnabled, event.currentTarget, event);
         onPress();
       }}
       onPointerUp={(event) => {
@@ -60,6 +65,7 @@ function HoldButton({
 export function ChordButtons({
   activeType,
   activeExtensions,
+  rippleEnabled = false,
   onTypeChange,
   onExtensionChange,
 }: ChordButtonsProps) {
@@ -72,6 +78,7 @@ export function ChordButtons({
             label={label}
             shortcut={shortcut}
             active={activeType === id}
+            rippleEnabled={rippleEnabled}
             onPress={() => onTypeChange(id)}
             onRelease={() => {
               if (activeType === id) {
@@ -88,6 +95,7 @@ export function ChordButtons({
             label={label}
             shortcut={shortcut}
             active={activeExtensions.has(id)}
+            rippleEnabled={rippleEnabled}
             onPress={() => onExtensionChange(id, true)}
             onRelease={() => onExtensionChange(id, false)}
           />

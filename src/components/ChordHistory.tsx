@@ -1,3 +1,4 @@
+import { CollapsibleSection } from "./CollapsibleSection";
 import type { ChordHistoryEntry } from "../music/resolveChord";
 
 type ChordHistoryProps = {
@@ -124,12 +125,16 @@ export function ChordHistory({
   const allSelected = entries.length > 0 && entries.every((entry) => selectedIds.has(entry.id));
 
   return (
-    <section className="chord-history" aria-label="Chord history">
-      <section className="chord-history-section" aria-label="Favorite chords">
-        <p className="sound-controls-heading">Favorites</p>
-        {favorites.length === 0 ? (
-          <p className="chord-history-empty">Star a chord to save it here.</p>
-        ) : (
+    <div className="chord-history" aria-label="Chord history">
+      <CollapsibleSection
+        className="chord-history-section"
+        title="Favorites"
+        subtitle={
+          favorites.length === 0 ? "Star a chord to save it here." : `${favorites.length} saved`
+        }
+        defaultOpen={favorites.length > 0}
+      >
+        {favorites.length === 0 ? null : (
           <HistoryList
             entries={favorites}
             selectedIds={selectedIds}
@@ -141,52 +146,57 @@ export function ChordHistory({
             onDeleteEntry={onDeleteEntry}
           />
         )}
-      </section>
+      </CollapsibleSection>
 
-      <section className="chord-history-section chord-history-scroll" aria-label="Played chords">
-        <div className="chord-history-toolbar">
-          <p className="sound-controls-heading">History ({entries.length})</p>
-          {entries.length > 0 ? (
-            <div className="chord-history-actions">
-              <button
-                type="button"
-                className="chord-history-action"
-                onClick={() => (allSelected ? onClearSelection() : onSelectAll(allEntryIds))}
-              >
-                {allSelected ? "Clear all" : "Select all"}
-              </button>
-              {selectedIds.size > 0 ? (
-                <>
-                  <button type="button" className="chord-history-action" onClick={onClearSelection}>
-                    Clear
-                  </button>
-                  <button
-                    type="button"
-                    className="chord-history-action danger"
-                    onClick={onDeleteSelected}
-                  >
-                    Delete ({selectedIds.size})
-                  </button>
-                </>
-              ) : null}
+      <CollapsibleSection
+        className="chord-history-section chord-history-scroll"
+        title={`History (${entries.length})`}
+        subtitle={entries.length === 0 ? "Play a few chords to build your progression." : undefined}
+      >
+        {entries.length === 0 ? null : (
+          <>
+            <div className="chord-history-toolbar">
+              <div className="chord-history-actions">
+                <button
+                  type="button"
+                  className="chord-history-action"
+                  onClick={() => (allSelected ? onClearSelection() : onSelectAll(allEntryIds))}
+                >
+                  {allSelected ? "Clear all" : "Select all"}
+                </button>
+                {selectedIds.size > 0 ? (
+                  <>
+                    <button
+                      type="button"
+                      className="chord-history-action"
+                      onClick={onClearSelection}
+                    >
+                      Clear
+                    </button>
+                    <button
+                      type="button"
+                      className="chord-history-action danger"
+                      onClick={onDeleteSelected}
+                    >
+                      Delete ({selectedIds.size})
+                    </button>
+                  </>
+                ) : null}
+              </div>
             </div>
-          ) : null}
-        </div>
-        {entries.length === 0 ? (
-          <p className="chord-history-empty">Play a few chords to build your progression.</p>
-        ) : (
-          <HistoryList
-            entries={entries}
-            selectedIds={selectedIds}
-            selectable
-            onReplayStart={onReplayStart}
-            onReplayStop={onReplayStop}
-            onToggleFavorite={onToggleFavorite}
-            onToggleSelect={onToggleSelect}
-            onDeleteEntry={onDeleteEntry}
-          />
+            <HistoryList
+              entries={entries}
+              selectedIds={selectedIds}
+              selectable
+              onReplayStart={onReplayStart}
+              onReplayStop={onReplayStop}
+              onToggleFavorite={onToggleFavorite}
+              onToggleSelect={onToggleSelect}
+              onDeleteEntry={onDeleteEntry}
+            />
+          </>
         )}
-      </section>
-    </section>
+      </CollapsibleSection>
+    </div>
   );
 }

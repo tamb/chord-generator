@@ -1,3 +1,4 @@
+import { CollapsibleSection } from "./CollapsibleSection";
 import { KEY_SIGNATURES, type KeySignature } from "../music/keyMode";
 
 type KeyModeControlProps = {
@@ -14,14 +15,11 @@ export function KeyModeControl({
   onKeyChange,
 }: KeyModeControlProps) {
   return (
-    <section className="key-mode-control" aria-label="Key mode">
-      <div className="key-mode-header">
-        <div>
-          <p className="sound-controls-heading">Key Mode</p>
-          <p className="key-mode-status">
-            {enabled ? `${selectedKey.label} locked` : "Off — manual chord buttons"}
-          </p>
-        </div>
+    <CollapsibleSection
+      className="key-mode-control"
+      title="Key Mode"
+      subtitle={enabled ? `${selectedKey.label} locked` : "Off — manual chord buttons"}
+      headerActions={
         <button
           type="button"
           className={`key-mode-toggle ${enabled ? "active" : ""}`}
@@ -30,8 +28,8 @@ export function KeyModeControl({
         >
           {enabled ? "On" : "Off"}
         </button>
-      </div>
-
+      }
+    >
       <label className="key-mode-select">
         <span>Key</span>
         <select
@@ -56,6 +54,6 @@ export function KeyModeControl({
           ))}
         </select>
       </label>
-    </section>
+    </CollapsibleSection>
   );
 }

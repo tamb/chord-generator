@@ -1,3 +1,5 @@
+import { CollapsibleSection } from "./CollapsibleSection";
+
 type MidiControlsProps = {
   supported: boolean;
   enabled: boolean;
@@ -17,19 +19,18 @@ export function MidiControls({
   onDisable,
   onOutputChange,
 }: MidiControlsProps) {
+  const status = !supported
+    ? "Web MIDI not supported in this browser"
+    : enabled
+      ? "Sending chords on channel 1"
+      : "Disabled";
+
   return (
-    <section className="midi-controls" aria-label="MIDI output">
-      <div className="midi-controls-header">
-        <div>
-          <p className="sound-controls-heading">MIDI Out</p>
-          <p className="midi-controls-status">
-            {!supported
-              ? "Web MIDI not supported in this browser"
-              : enabled
-                ? "Sending chords on channel 1"
-                : "Disabled"}
-          </p>
-        </div>
+    <CollapsibleSection
+      className="midi-controls"
+      title="MIDI Out"
+      subtitle={status}
+      headerActions={
         <button
           type="button"
           className={`key-mode-toggle ${enabled ? "active" : ""}`}
@@ -39,8 +40,8 @@ export function MidiControls({
         >
           {enabled ? "On" : "Enable"}
         </button>
-      </div>
-
+      }
+    >
       {supported && outputs.length > 0 ? (
         <label className="key-mode-select">
           <span>Output</span>
@@ -56,6 +57,6 @@ export function MidiControls({
           </select>
         </label>
       ) : null}
-    </section>
+    </CollapsibleSection>
   );
 }

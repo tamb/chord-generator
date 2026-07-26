@@ -1,3 +1,5 @@
+import { CollapsibleSection } from "./CollapsibleSection";
+
 type VoicingDialProps = {
   value: number;
   onChange: (value: number) => void;
@@ -5,8 +7,11 @@ type VoicingDialProps = {
 
 export function VoicingDial({ value, onChange }: VoicingDialProps) {
   return (
-    <section className="voicing-dial" aria-label="Chord voicing">
-      <p className="sound-controls-heading">Voicing</p>
+    <CollapsibleSection
+      className="voicing-dial"
+      title="Voicing"
+      subtitle={value === 0 ? "Root position" : `Inversion ${value > 0 ? `+${value}` : value}`}
+    >
       <div className="voicing-dial-body">
         <button
           type="button"
@@ -29,6 +34,6 @@ export function VoicingDial({ value, onChange }: VoicingDialProps) {
           +
         </button>
       </div>
-    </section>
+    </CollapsibleSection>
   );
 }
