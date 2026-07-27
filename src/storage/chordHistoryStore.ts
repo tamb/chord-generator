@@ -8,6 +8,7 @@ import {
   type ChordHistoryEntry,
   type ChordPlaybackSettings,
 } from "../music/resolveChord";
+import { clampOctave } from "../music/voicing";
 
 export const CHORD_HISTORY_STORAGE_KEY = "chord-history";
 export const CHORD_HISTORY_COUNTER_KEY = "chord-history-counter";
@@ -123,6 +124,7 @@ export function parseChordHistoryEntry(value: unknown): ChordHistoryEntry | null
     chordType,
     extensions: [...entry.extensions],
     voicing: entry.voicing,
+    octave: typeof entry.octave === "number" ? clampOctave(entry.octave) : 0,
     name: entry.name,
     usedKeyMode: entry.usedKeyMode,
     keyModeEnabled: entry.keyModeEnabled ?? entry.usedKeyMode,

@@ -1,6 +1,6 @@
 import { buildChord, formatChordName, type ChordExtension, type ChordType } from "./chords";
 import { getDiatonicChordType, type KeySignature, type ScaleMode } from "./keyMode";
-import { applyVoicing } from "./voicing";
+import { applyOctave, applyVoicing } from "./voicing";
 import { DEFAULT_VOICE_ID, type VoiceId } from "../audio/voices";
 
 export type ChordRequest = {
@@ -10,6 +10,7 @@ export type ChordRequest = {
   keyModeEnabled: boolean;
   key: KeySignature;
   voicing: number;
+  octave: number;
 };
 
 export type ChordPlaybackSettings = {
@@ -34,6 +35,7 @@ export type ChordHistoryEntry = {
   chordType: ChordType | null;
   extensions: ChordExtension[];
   voicing: number;
+  octave: number;
   name: string;
   usedKeyMode: boolean;
   keyModeEnabled: boolean;
@@ -60,13 +62,14 @@ export function resolveChord({
   keyModeEnabled,
   key,
   voicing,
+  octave,
 }: ChordRequest): ResolvedChord {
   const usedKeyMode = manualType === null && keyModeEnabled;
   const chordType =
     manualType ?? (keyModeEnabled ? getDiatonicChordType(key.root, key.mode, rootMidi) : null);
 
   const baseNotes = buildChord(rootMidi, chordType, extensions);
-  const notes = applyVoicing(baseNotes, voicing);
+  const notes = applyOctave(applyVoicing(baseNotes, voicing), octave);
   const name = formatChordName(rootMidi, chordType, extensions);
 
   return {
@@ -91,6 +94,7 @@ export function createHistoryEntry(
     chordType: resolved.chordType,
     extensions: [...request.extensions],
     voicing: request.voicing,
+    octave: request.octave,
     name: resolved.name,
     usedKeyMode: resolved.usedKeyMode,
     keyModeEnabled: request.keyModeEnabled,
@@ -115,6 +119,7 @@ export function historyEntryToRequest(entry: ChordHistoryEntry): ChordRequest {
       label: entry.keyLabel,
     },
     voicing: entry.voicing,
+    octave: entry.octave,
   };
 }
 
@@ -124,6 +129,7 @@ export function entrySignature(entry: ChordHistoryEntry): string {
     manualType: entry.manualType,
     extensions: entry.extensions,
     voicing: entry.voicing,
+    octave: entry.octave,
     keyModeEnabled: entry.keyModeEnabled,
     keyRoot: entry.keyRoot,
     keyMode: entry.keyMode,

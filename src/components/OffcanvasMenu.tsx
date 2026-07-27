@@ -7,6 +7,8 @@ type OffcanvasMenuProps = {
   onDarkModeChange: (enabled: boolean) => void;
   rippleEnabled: boolean;
   onRippleEnabledChange: (enabled: boolean) => void;
+  atmosphereEnabled: boolean;
+  onAtmosphereEnabledChange: (enabled: boolean) => void;
 };
 
 export function OffcanvasMenu({
@@ -16,6 +18,8 @@ export function OffcanvasMenu({
   onDarkModeChange,
   rippleEnabled,
   onRippleEnabledChange,
+  atmosphereEnabled,
+  onAtmosphereEnabledChange,
 }: OffcanvasMenuProps) {
   const titleId = useId();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -120,13 +124,22 @@ export function OffcanvasMenu({
               {rippleEnabled ? "On" : "Off"}
             </button>
           </div>
-          <ul className="offcanvas-list">
-            <li>
-              <button type="button" className="offcanvas-item">
-                Atmosphere effect
-              </button>
-            </li>
-          </ul>
+          <div className="settings-toggle-row">
+            <div className="settings-toggle-copy">
+              <span className="settings-toggle-label">Atmosphere Mode</span>
+              <span className="settings-toggle-hint">
+                {atmosphereEnabled ? "On — chord color glow" : "Off"}
+              </span>
+            </div>
+            <button
+              type="button"
+              className={`key-mode-toggle ${atmosphereEnabled ? "active" : ""}`}
+              aria-pressed={atmosphereEnabled}
+              onClick={() => onAtmosphereEnabledChange(!atmosphereEnabled)}
+            >
+              {atmosphereEnabled ? "On" : "Off"}
+            </button>
+          </div>
         </section>
       </aside>
     </>

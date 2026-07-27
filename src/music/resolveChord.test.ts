@@ -28,6 +28,7 @@ function makeEntry(overrides: Partial<ChordHistoryEntry> = {}): ChordHistoryEntr
     keyModeEnabled: false,
     key: DEFAULT_KEY,
     voicing: 0,
+    octave: 0,
   };
 
   return {
@@ -51,6 +52,7 @@ describe("resolveChord", () => {
       keyModeEnabled: true,
       key: DEFAULT_KEY,
       voicing: 0,
+      octave: 0,
     });
 
     expect(resolved.name).toBe("Cmaj7");
@@ -66,6 +68,7 @@ describe("resolveChord", () => {
       keyModeEnabled: true,
       key: DEFAULT_KEY,
       voicing: 0,
+      octave: 0,
     });
 
     expect(resolved.chordType).toBe("min");
@@ -81,6 +84,7 @@ describe("resolveChord", () => {
       keyModeEnabled: false,
       key: DEFAULT_KEY,
       voicing: 0,
+      octave: 0,
     });
 
     expect(resolved.name).toBe("C");
@@ -96,9 +100,24 @@ describe("resolveChord", () => {
       keyModeEnabled: false,
       key: DEFAULT_KEY,
       voicing: 1,
+      octave: 0,
     });
 
     expect(resolved.notes).toEqual([64, 67, 72]);
+  });
+
+  it("applies octave after voicing", () => {
+    const resolved = resolveChord({
+      rootMidi: 60,
+      manualType: "maj",
+      extensions: [],
+      keyModeEnabled: false,
+      key: DEFAULT_KEY,
+      voicing: 1,
+      octave: 1,
+    });
+
+    expect(resolved.notes).toEqual([76, 79, 84]);
   });
 
   it("stores full settings on history entries", () => {
@@ -109,6 +128,7 @@ describe("resolveChord", () => {
       keyModeEnabled: false,
       key: DEFAULT_KEY,
       voicing: 0,
+      octave: 0,
     };
     const resolved = resolveChord(request);
     const entry = createHistoryEntry(request, resolved, sampleSettings, "history-1", 100);
@@ -128,6 +148,7 @@ describe("resolveChord", () => {
       keyModeEnabled: true,
       key: DEFAULT_KEY,
       voicing: -1,
+      octave: -1,
     };
     const entry = createHistoryEntry(
       request,
@@ -138,6 +159,7 @@ describe("resolveChord", () => {
 
     expect(entry.usedKeyMode).toBe(true);
     expect(entry.manualType).toBeNull();
+    expect(entry.octave).toBe(-1);
     expect(historyEntryToRequest(entry)).toEqual(request);
   });
 });

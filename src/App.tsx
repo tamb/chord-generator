@@ -13,6 +13,7 @@ import { ChordDisplay } from "./components/ChordDisplay";
 import { ChordHistory } from "./components/ChordHistory";
 import { KeyModeControl } from "./components/KeyModeControl";
 import { MidiControls } from "./components/MidiControls";
+import { AtmosphereParticles } from "./components/AtmosphereParticles";
 import { OffcanvasMenu } from "./components/OffcanvasMenu";
 import { PianoKeyboard } from "./components/PianoKeyboard";
 import { SoundControls } from "./components/SoundControls";
@@ -34,11 +35,22 @@ import {
   type ChordRequest,
 } from "./music/resolveChord";
 import { formatNoteList, type ChordExtension, type ChordType } from "./music/chords";
-import { clampVoicing, stepVoicing } from "./music/voicing";
+import { clampOctave, clampVoicing, stepVoicing } from "./music/voicing";
 import { loadChordHistory, saveChordHistory } from "./storage/chordHistoryStore";
 import { shouldApplyLoadedHistory } from "./storage/historyHydration";
 import { applyThemeMode, loadThemeMode, saveThemeMode, type ThemeMode } from "./storage/themeStore";
 import { loadRippleEnabled, saveRippleEnabled } from "./storage/rippleStore";
+import { loadAtmosphereEnabled, saveAtmosphereEnabled } from "./storage/atmosphereStore";
+import {
+  IDLE_ATMOSPHERE_PALETTE,
+  resolveAtmospherePalette,
+  type AtmosphereInput,
+} from "./music/atmosphereColors";
+import {
+  applyAtmospherePalette,
+  clearAtmospherePalette,
+  setAtmosphereEnabled,
+} from "./ui/atmosphere";
 import "./App.css";
 
 type ResolvedDisplay = {
@@ -61,6 +73,7 @@ function buildRequest(
   keyModeEnabled: boolean,
   key: KeySignature,
   voicing: number,
+  octave: number,
 ): ChordRequest {
   return {
     rootMidi,
@@ -69,6 +82,7 @@ function buildRequest(
     keyModeEnabled,
     key,
     voicing,
+    octave,
   };
 }
 
@@ -78,6 +92,7 @@ function requestHistorySignature(request: ChordRequest): string {
     manualType: request.manualType,
     extensions: request.extensions,
     voicing: request.voicing,
+    octave: request.octave,
     keyModeEnabled: request.keyModeEnabled,
     keyRoot: request.key.root,
     keyMode: request.key.mode,
@@ -97,6 +112,7 @@ function App() {
   const [keyModeEnabled, setKeyModeEnabled] = useState(true);
   const [key, setKey] = useState<KeySignature>(DEFAULT_KEY);
   const [voicing, setVoicing] = useState(0);
+  const [octave, setOctave] = useState(0);
   const [history, setHistory] = useState<ChordHistoryEntry[]>([]);
   const [historyHydrated, setHistoryHydrated] = useState(false);
   const [selectedHistoryIds, setSelectedHistoryIds] = useState<Set<string>>(() => new Set());
@@ -108,6 +124,8 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => loadThemeMode());
   const [rippleEnabled, setRippleEnabled] = useState(() => loadRippleEnabled());
+  const [atmosphereEnabled, setAtmosphereEnabledState] = useState(() => loadAtmosphereEnabled());
+  const [replayAtmosphere, setReplayAtmosphere] = useState<AtmosphereInput | null>(null);
   const historyCounter = useRef(0);
   const historyHydratedRef = useRef(false);
   const historySaveChain = useRef(Promise.resolve());
@@ -140,8 +158,16 @@ function App() {
       return null;
     }
 
-    return buildRequest(activeMidi, activeType, activeExtensionList, keyModeEnabled, key, voicing);
-  }, [activeExtensionList, activeMidi, activeType, key, keyModeEnabled, voicing]);
+    return buildRequest(
+      activeMidi,
+      activeType,
+      activeExtensionList,
+      keyModeEnabled,
+      key,
+      voicing,
+      octave,
+    );
+  }, [activeExtensionList, activeMidi, activeType, key, keyModeEnabled, octave, voicing]);
 
   const liveResolved = useMemo(() => {
     if (!liveRequest) {
@@ -257,6 +283,10 @@ function App() {
     setVoicing(next);
   }, []);
 
+  const handleOctaveChange = useCallback((next: number) => {
+    setOctave(clampOctave(next));
+  }, []);
+
   const handleHistoryReplayStart = useCallback(
     async (entry: ChordHistoryEntry) => {
       await startAudio();
@@ -265,6 +295,13 @@ function App() {
       setReplayDisplay({
         chordName: resolved.name,
         noteList: formatNoteList(resolved.notes),
+      });
+      setReplayAtmosphere({
+        rootMidi: entry.rootMidi,
+        chordType: resolved.chordType,
+        extensions: entry.extensions,
+        keyMode: entry.keyMode,
+        keyRoot: entry.keyRoot,
       });
     },
     [applyPlaybackSettings, playResolved, startAudio],
@@ -323,6 +360,7 @@ function App() {
   const handleHistoryReplayStop = useCallback(() => {
     stopChord();
     setReplayDisplay(null);
+    setReplayAtmosphere(null);
   }, []);
 
   const handleEnableMidi = useCallback(async () => {
@@ -354,6 +392,40 @@ function App() {
   useEffect(() => {
     saveRippleEnabled(rippleEnabled);
   }, [rippleEnabled]);
+
+  useEffect(() => {
+    saveAtmosphereEnabled(atmosphereEnabled);
+    setAtmosphereEnabled(atmosphereEnabled);
+  }, [atmosphereEnabled]);
+
+  const liveAtmosphere = useMemo((): AtmosphereInput | null => {
+    if (!liveRequest || !liveResolved) {
+      return null;
+    }
+
+    return {
+      rootMidi: liveRequest.rootMidi,
+      chordType: liveResolved.chordType,
+      extensions: liveRequest.extensions,
+      keyMode: liveRequest.key.mode,
+      keyRoot: liveRequest.key.root,
+    };
+  }, [liveRequest, liveResolved]);
+
+  useEffect(() => {
+    if (!atmosphereEnabled) {
+      clearAtmospherePalette();
+      return;
+    }
+
+    const input = replayAtmosphere ?? liveAtmosphere;
+    if (!input) {
+      applyAtmospherePalette(IDLE_ATMOSPHERE_PALETTE);
+      return;
+    }
+
+    applyAtmospherePalette(resolveAtmospherePalette(input));
+  }, [atmosphereEnabled, liveAtmosphere, replayAtmosphere]);
 
   useEffect(() => {
     let cancelled = false;
@@ -527,6 +599,12 @@ function App() {
 
   return (
     <main className="instrument">
+      <AtmosphereParticles
+        enabled={atmosphereEnabled}
+        reverb={reverb}
+        tremolo={tremolo}
+        phaser={phaser}
+      />
       <header className="instrument-header">
         <h2 className="instrument-title">chord-generator</h2>
         <OffcanvasMenu
@@ -536,6 +614,8 @@ function App() {
           onDarkModeChange={(enabled) => setThemeMode(enabled ? "dark" : "light")}
           rippleEnabled={rippleEnabled}
           onRippleEnabledChange={setRippleEnabled}
+          atmosphereEnabled={atmosphereEnabled}
+          onAtmosphereEnabledChange={setAtmosphereEnabledState}
         />
       </header>
 
@@ -600,9 +680,11 @@ function App() {
             />
             <VoicingDial
               value={voicing}
+              octave={octave}
               onChange={(next) =>
                 handleVoicingChange(clampVoicing(next, liveResolved?.notes.length ?? 4))
               }
+              onOctaveChange={handleOctaveChange}
             />
             <MidiControls
               supported={midiSupported}

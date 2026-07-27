@@ -93,6 +93,7 @@ describe("chordHistoryStore parsing", () => {
           chordType: "maj",
           extensions: [],
           voicing: 0,
+          octave: 0,
           name: "C",
           usedKeyMode: false,
           keyModeEnabled: false,
@@ -139,6 +140,21 @@ describe("chordHistoryStore parsing", () => {
     expect(entry?.settings.volume).toBe(0.75);
   });
 
+  it("defaults octave to 0 for legacy entries", () => {
+    const entry = parseChordHistoryEntry({
+      id: "history-1",
+      rootMidi: 60,
+      chordType: "maj",
+      extensions: ["M7"],
+      voicing: 0,
+      name: "Cmaj7",
+      usedKeyMode: false,
+      keyLabel: "C Major",
+    });
+
+    expect(entry?.octave).toBe(0);
+  });
+
   it("defaults favorite and playedAt for legacy entries", () => {
     const entry = parseChordHistoryEntry({
       id: "history-legacy",
@@ -154,6 +170,35 @@ describe("chordHistoryStore parsing", () => {
     expect(entry?.favorite).toBe(false);
     expect(entry?.playedAt).toBe(0);
     expect(entry?.keyModeEnabled).toBe(true);
+  });
+
+  it("parses and clamps stored octave shifts", () => {
+    const entry = parseChordHistoryEntry({
+      id: "history-1",
+      rootMidi: 60,
+      manualType: "maj",
+      chordType: "maj",
+      extensions: [],
+      voicing: 0,
+      octave: 9,
+      name: "C",
+      usedKeyMode: false,
+      keyModeEnabled: false,
+      keyRoot: 0,
+      keyMode: "major",
+      keyLabel: "C Major",
+      settings: {
+        voiceId: "warm-pad",
+        reverb: 0.18,
+        tremolo: 0,
+        phaser: 0,
+        volume: 0.75,
+      },
+      favorite: false,
+      playedAt: 1,
+    });
+
+    expect(entry?.octave).toBe(2);
   });
 
   it("returns an empty array for non-array stored history", () => {

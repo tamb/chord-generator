@@ -105,6 +105,10 @@ function formatEntryMeta(entry: ChordHistoryEntry): string {
     parts.push(`voicing ${entry.voicing > 0 ? `+${entry.voicing}` : entry.voicing}`);
   }
 
+  if (entry.octave !== 0) {
+    parts.push(`oct ${entry.octave > 0 ? `+${entry.octave}` : entry.octave}`);
+  }
+
   return parts.join(" · ");
 }
 

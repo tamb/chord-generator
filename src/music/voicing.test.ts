@@ -1,8 +1,15 @@
 import { describe, expect, it } from "vite-plus/test";
-import { applyVoicing, clampVoicing, stepVoicing } from "./voicing";
+import {
+  applyOctave,
+  applyVoicing,
+  clampOctave,
+  clampVoicing,
+  stepOctave,
+  stepVoicing,
+} from "./voicing";
 
 describe("voicing", () => {
-  it("returns root position unchanged at zero", () => {
+  it("returns the original notes for root position", () => {
     expect(applyVoicing([60, 64, 67], 0)).toEqual([60, 64, 67]);
   });
 
@@ -28,5 +35,21 @@ describe("voicing", () => {
     expect(stepVoicing(1, 1, 3)).toBe(2);
     expect(stepVoicing(-2, -1, 3)).toBe(-2);
     expect(stepVoicing(0, -1, 4)).toBe(-1);
+  });
+
+  it("shifts every note by whole octaves", () => {
+    expect(applyOctave([60, 64, 67], 0)).toEqual([60, 64, 67]);
+    expect(applyOctave([60, 64, 67], 1)).toEqual([72, 76, 79]);
+    expect(applyOctave([60, 64, 67], -1)).toEqual([48, 52, 55]);
+  });
+
+  it("clamps octave shifts to a usable register range", () => {
+    expect(clampOctave(5)).toBe(2);
+    expect(clampOctave(-5)).toBe(-2);
+    expect(clampOctave(1.8)).toBe(1);
+    expect(clampOctave(Number.NaN)).toBe(0);
+    expect(stepOctave(2, 1)).toBe(2);
+    expect(stepOctave(-2, -1)).toBe(-2);
+    expect(stepOctave(0, 1)).toBe(1);
   });
 });
