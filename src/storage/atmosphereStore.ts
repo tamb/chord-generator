@@ -1,14 +1,18 @@
 export const ATMOSPHERE_STORAGE_KEY = "chord-generator-atmosphere";
 
+/** Default on when unset; only an explicit false disables. */
 export function parseAtmosphereEnabled(value: unknown): boolean {
-  return value === "true" || value === true;
+  if (value === "false" || value === false) {
+    return false;
+  }
+  return true;
 }
 
 export function loadAtmosphereEnabled(): boolean {
   try {
     return parseAtmosphereEnabled(localStorage.getItem(ATMOSPHERE_STORAGE_KEY));
   } catch {
-    return false;
+    return true;
   }
 }
 

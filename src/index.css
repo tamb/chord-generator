@@ -136,7 +136,9 @@ body {
  *   .instrument::after     — semi-opaque panel veil (readability)
  *   .atmosphere-particles  — canvas sparks (z-index 0)
  *   .instrument children   — real UI (z-index 1+)
- *   #root::after           — glowing viewport border rim
+ *   #root::after           — glowing viewport border rim (z-index 2)
+ *   .offcanvas-backdrop    — settings dimmer (z-index 100, portaled to body)
+ *   .offcanvas-panel       — settings menu (z-index 110, portaled to body — topmost)
  */
 
 /* Full-viewport ambient wash (behind .instrument) */
@@ -177,7 +179,7 @@ html.atmosphere-enabled #root::after {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 2; /* above .instrument; keep below offcanvas (z-index 40+) */
+  z-index: 2; /* above .instrument; settings offcanvas portals above this */
   pointer-events: none;
   box-shadow:
     /* blur radius / spread — raise numbers for a thicker / softer rim */
@@ -398,7 +400,7 @@ button {
 .offcanvas-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 100; /* above Atmosphere rim (#root::after); below .offcanvas-panel */
   background: var(--backdrop);
   opacity: 0;
   pointer-events: none;
@@ -414,7 +416,7 @@ button {
   position: fixed;
   top: 0;
   right: 0;
-  z-index: 50;
+  z-index: 110; /* topmost UI — App Settings always above Atmosphere / particles */
   display: flex;
   flex-direction: column;
   width: min(320px, 88vw);

@@ -28,7 +28,7 @@ type Particle = {
 };
 
 /** How many sparks to spawn. Raise for denser field; lower for subtler look. */
-const PARTICLE_COUNT = 64;
+const PARTICLE_COUNT = 96;
 
 /** Clamp effect dials to a safe 0–1 range. */
 export function clampEffectLevel(value: number): number {

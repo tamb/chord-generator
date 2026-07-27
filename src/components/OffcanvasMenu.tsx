@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
 
 type OffcanvasMenuProps = {
   open: boolean;
@@ -41,6 +42,101 @@ export function OffcanvasMenu({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onOpenChange, open]);
 
+  // Portal overlay + panel to <body> so they sit above Atmosphere layers.
+  // (.instrument uses isolation/z-index stacking that would otherwise trap the menu under the rim.)
+  const settingsOverlay =
+    typeof document === "undefined"
+      ? null
+      : createPortal(
+          <>
+            <div
+              className={`offcanvas-backdrop ${open ? "open" : ""}`}
+              onClick={() => onOpenChange(false)}
+              aria-hidden={!open}
+            />
+
+            <aside
+              id="app-settings-offcanvas"
+              className={`offcanvas-panel ${open ? "open" : ""}`}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={titleId}
+              aria-hidden={!open}
+              inert={open ? undefined : true}
+            >
+              <div className="offcanvas-header">
+                <h3 id={titleId} className="offcanvas-title">
+                  Settings
+                </h3>
+                <button
+                  ref={closeButtonRef}
+                  type="button"
+                  className="offcanvas-close"
+                  aria-label="Close menu"
+                  onClick={() => onOpenChange(false)}
+                >
+                  ×
+                </button>
+              </div>
+
+              <section className="offcanvas-section" aria-label="Appearance">
+                <p className="sound-controls-heading">Appearance</p>
+                <div className="settings-toggle-row">
+                  <div className="settings-toggle-copy">
+                    <span className="settings-toggle-label">Dark mode</span>
+                    <span className="settings-toggle-hint">{darkMode ? "On" : "Off"}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className={`key-mode-toggle ${darkMode ? "active" : ""}`}
+                    aria-pressed={darkMode}
+                    onClick={() => onDarkModeChange(!darkMode)}
+                  >
+                    {darkMode ? "On" : "Off"}
+                  </button>
+                </div>
+              </section>
+
+              <section className="offcanvas-section" aria-label="Effects">
+                <p className="sound-controls-heading">Effects</p>
+                <div className="settings-toggle-row">
+                  <div className="settings-toggle-copy">
+                    <span className="settings-toggle-label">Ripple effect</span>
+                    <span className="settings-toggle-hint">
+                      {rippleEnabled ? "On — press feedback" : "Off"}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className={`key-mode-toggle ${rippleEnabled ? "active" : ""}`}
+                    aria-pressed={rippleEnabled}
+                    onClick={() => onRippleEnabledChange(!rippleEnabled)}
+                  >
+                    {rippleEnabled ? "On" : "Off"}
+                  </button>
+                </div>
+                <div className="settings-toggle-row">
+                  <div className="settings-toggle-copy">
+                    <span className="settings-toggle-label">Atmosphere Mode</span>
+                    <span className="settings-toggle-hint">
+                      {atmosphereEnabled ? "On — chord color glow" : "Off"}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className={`key-mode-toggle ${atmosphereEnabled ? "active" : ""}`}
+                    aria-pressed={atmosphereEnabled}
+                    onClick={() => onAtmosphereEnabledChange(!atmosphereEnabled)}
+                  >
+                    {atmosphereEnabled ? "On" : "Off"}
+                  </button>
+                </div>
+              </section>
+            </aside>
+          </>,
+          document.body,
+        );
+
   return (
     <>
       <button
@@ -58,90 +154,7 @@ export function OffcanvasMenu({
         </span>
       </button>
 
-      <div
-        className={`offcanvas-backdrop ${open ? "open" : ""}`}
-        onClick={() => onOpenChange(false)}
-        aria-hidden={!open}
-      />
-
-      <aside
-        id="app-settings-offcanvas"
-        className={`offcanvas-panel ${open ? "open" : ""}`}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        aria-hidden={!open}
-        inert={open ? undefined : true}
-      >
-        <div className="offcanvas-header">
-          <h3 id={titleId} className="offcanvas-title">
-            Settings
-          </h3>
-          <button
-            ref={closeButtonRef}
-            type="button"
-            className="offcanvas-close"
-            aria-label="Close menu"
-            onClick={() => onOpenChange(false)}
-          >
-            ×
-          </button>
-        </div>
-
-        <section className="offcanvas-section" aria-label="Appearance">
-          <p className="sound-controls-heading">Appearance</p>
-          <div className="settings-toggle-row">
-            <div className="settings-toggle-copy">
-              <span className="settings-toggle-label">Dark mode</span>
-              <span className="settings-toggle-hint">{darkMode ? "On" : "Off"}</span>
-            </div>
-            <button
-              type="button"
-              className={`key-mode-toggle ${darkMode ? "active" : ""}`}
-              aria-pressed={darkMode}
-              onClick={() => onDarkModeChange(!darkMode)}
-            >
-              {darkMode ? "On" : "Off"}
-            </button>
-          </div>
-        </section>
-
-        <section className="offcanvas-section" aria-label="Effects">
-          <p className="sound-controls-heading">Effects</p>
-          <div className="settings-toggle-row">
-            <div className="settings-toggle-copy">
-              <span className="settings-toggle-label">Ripple effect</span>
-              <span className="settings-toggle-hint">
-                {rippleEnabled ? "On — press feedback" : "Off"}
-              </span>
-            </div>
-            <button
-              type="button"
-              className={`key-mode-toggle ${rippleEnabled ? "active" : ""}`}
-              aria-pressed={rippleEnabled}
-              onClick={() => onRippleEnabledChange(!rippleEnabled)}
-            >
-              {rippleEnabled ? "On" : "Off"}
-            </button>
-          </div>
-          <div className="settings-toggle-row">
-            <div className="settings-toggle-copy">
-              <span className="settings-toggle-label">Atmosphere Mode</span>
-              <span className="settings-toggle-hint">
-                {atmosphereEnabled ? "On — chord color glow" : "Off"}
-              </span>
-            </div>
-            <button
-              type="button"
-              className={`key-mode-toggle ${atmosphereEnabled ? "active" : ""}`}
-              aria-pressed={atmosphereEnabled}
-              onClick={() => onAtmosphereEnabledChange(!atmosphereEnabled)}
-            >
-              {atmosphereEnabled ? "On" : "Off"}
-            </button>
-          </div>
-        </section>
-      </aside>
+      {settingsOverlay}
     </>
   );
 }

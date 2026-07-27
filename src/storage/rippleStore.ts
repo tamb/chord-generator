@@ -1,14 +1,18 @@
 export const RIPPLE_STORAGE_KEY = "chord-generator-ripple";
 
+/** Default on when unset; only an explicit false disables. */
 export function parseRippleEnabled(value: unknown): boolean {
-  return value === "true" || value === true;
+  if (value === "false" || value === false) {
+    return false;
+  }
+  return true;
 }
 
 export function loadRippleEnabled(): boolean {
   try {
     return parseRippleEnabled(localStorage.getItem(RIPPLE_STORAGE_KEY));
   } catch {
-    return false;
+    return true;
   }
 }
 
