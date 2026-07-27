@@ -2,15 +2,16 @@ export type ThemeMode = "light" | "dark";
 
 export const THEME_STORAGE_KEY = "chord-generator-theme";
 
+/** Default dark when unset; only an explicit "light" enables light mode. */
 export function parseThemeMode(value: unknown): ThemeMode {
-  return value === "dark" ? "dark" : "light";
+  return value === "light" ? "light" : "dark";
 }
 
 export function loadThemeMode(): ThemeMode {
   try {
     return parseThemeMode(localStorage.getItem(THEME_STORAGE_KEY));
   } catch {
-    return "light";
+    return "dark";
   }
 }
 
